@@ -25,7 +25,7 @@ normal web-panel operation.
 | Component | Default |
 |---|---|
 | Controller | Wemos D1 Mini / ESP8266 |
-| LED data pin | `D6` |
+| LED data pin | `D5` |
 | LED count | `120` |
 | LED protocol | WS2812 / NeoPixel |
 | Serial monitor | `115200 baud` |
