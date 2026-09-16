@@ -9,7 +9,7 @@ normal web-panel operation.
 
 ## Features
 
-- WS2812 control on pin `D6` for 120 LEDs by default;
+- WS2812 control on pin `D5` for 120 LEDs by default;
 - on/off control, RGB color, and brightness;
 - static, rainbow, fire, waves, twinkle, and color-cycle effects;
 - non-blocking animations and non-blocking sunrise test;
