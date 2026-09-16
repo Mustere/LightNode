@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LightNode</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+      <h1>LightNode Control</h1>
+      <div id="status-bar">
+          <span>Статус Wi-Fi: <strong id="net-status">STA</strong></span> |
+          <span>Время NTP: <strong id="clock">--:--:--</strong></span>
+      </div>
+  </header>
+  <main>
+    <div class="tab-content active">
+      <div class="container-header">
+          <h2>Управление системой</h2>
+          <button class="btn-collapse">↑↓</button>
+      </div>
+
+      <div class="tab-twice">
+                <section id="network">
+                    <h2>Настройки Wi-Fi соединения</h2>
+                    <form id="wifi-form">
+                        <div class="form-group">
+                            <label for="wifi-mode">Режим работы:</label>
+                            <div class="select-wrapper">
+                                <select id="wifi-mode" name="wifi_mode">
+                                    <option value="STA">Клиент (STA)</option>
+                                    <option value="AP">Точка доступа (AP)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="wifi-ssid">Имя сети (SSID):</label>
+                            <input type="text" id="wifi-ssid" placeholder="Название Wi-Fi" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="wifi-pass">Пароль:</label>
+                            <div class="secret-input">
+                                <input type="password" id="wifi-password" name="password" autocomplete="current-password" placeholder="Пароль">
+                                <button type="button" class="toggle-secret" data-target="wifi-password" aria-label="Показать пароль">Показать</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mqtt-token">MQTT токен</label>
+                            <div class="secret-input">
+                                <input type="password" id="mqtt-token" autocomplete="current-password" placeholder="MQTT токен">
+                                <button type="button" class="toggle-secret" data-target="mqtt-token" aria-label="Показать MQTT токен">Показать</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">Применить и перезагрузить</button>
+                    </form>
+                </section>
+
+                <section id="system-update">
+                    <h2>Обновление прошивки</h2>
+                    <div class="card" style="display: flex; flex-direction: column; flex-grow: 1;">
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">
+                            Выберите скомпилированный бинарный файл прошивки (.bin) для обновления LightNode.
+                        </p>
+                        
+                        <form id="ota-form" method="POST" action="/api/update" enctype="multipart/form-data" style="display: flex; flex-direction: column; flex-grow: 1;">
+                            <div class="form-group" style="margin-bottom: auto;">
+                                <input type="file" id="ota-file-input" name="update" accept=".bin" style="padding: 5px 0;">
+                            </div>
+                            
+                            <div id="ota-progress-container">
+                                <div id="ota-progress-bar"></div>
+                            </div>
+                            
+                            <p id="ota-status-text" style="margin-top: 10px; font-size: 0.9rem; min-height: 1.2em; text-align: center;"></p>
+                            <button type="submit" id="ota-submit-btn" class="btn btn-primary" disabled>Загрузить прошивку</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+
+    </div>
+      <section id="schedule" class="tab-content active light-panel">
+        <div class="container-header">
+          <div>
+            <h2>Подсветка</h2>
+            <p class="section-hint">Изменения применяются автоматически</p>
+          </div>
+          <span id="light-save-status" class="save-status" role="status"></span>
+        </div>
+        <form id="light-form" class="light-form">
+          <div class="light-controls">
+            <label class="switch-row">
+              <span>Подсветка включена</span>
+              <input id="enabled" type="checkbox" class="rule-active">
+            </label>
+            <label class="control-row">
+              <span>Яркость</span>
+              <input id="brightness" type="range" min="0" max="255">
+              <output id="brightness-value" for="brightness">128</output>
+            </label>
+            <label class="control-row">
+              <span>Цвет</span>
+              <input id="color" type="color">
+            </label>
+            <label class="control-row">
+              <span>Эффект</span>
+              <select id="effect">
+                <option value="0">Статичный</option>
+                <option value="1">Радуга</option>
+                <option value="2">Огонь</option>
+                <option value="3">Волны</option>
+                <option value="4">Мерцание</option>
+                <option value="5">Цикл</option>
+              </select>
+            </label>
+          </div>
+          <fieldset class="alarm-settings">
+            <legend>Рассвет по расписанию</legend>
+            <label class="switch-row">
+              <span>Включить рассвет</span>
+              <input id="alarm-enabled" type="checkbox" class="rule-active">
+            </label>
+            <div id="alarms" class="alarm-grid">
+              <label>Вс <input class="alarm" type="time"></label>
+              <label>Пн <input class="alarm" type="time"></label>
+              <label>Вт <input class="alarm" type="time"></label>
+              <label>Ср <input class="alarm" type="time"></label>
+              <label>Чт <input class="alarm" type="time"></label>
+              <label>Пт <input class="alarm" type="time"></label>
+              <label>Сб <input class="alarm" type="time"></label>
+            </div>
+          </fieldset>
+          <button id="sunrise" type="button" class="btn btn-add">Тест рассвета</button>
+        </form>
+      </section>
+  </main>
+  <p id="message" role="status"></p>
+  <script src="script.js"></script>
+</body>
+</html>

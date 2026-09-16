@@ -1,0 +1,33 @@
+# PlatformIO build output and local environments
+.pio/
+.pioenvs/
+.piolibdeps/
+.platformio/
+
+# PlatformIO and compiler-generated files
+.clang_complete
+.gcc-flags.json
+*.idb
+*.pdb
+*.elf
+*.bin
+*.map
+*.log
+
+# Local IDE settings
+.vscode/
+.idea/
+
+# Device-generated configuration and local secrets
+data/config.json
+*.env
+*.local
+secrets/
+
+# Package manager and operating-system files
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Local documentation exports
+/docs/
