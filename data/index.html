@@ -103,19 +103,33 @@
               <input id="brightness" type="range" min="0" max="255">
               <output id="brightness-value" for="brightness">128</output>
             </label>
-            <label class="control-row">
+            <label class="control-row color-row">
               <span>Цвет</span>
-              <input id="color" type="color">
+              <div class="color-picker-row">
+                <input id="color" type="color">
+                <button type="button" id="save-favorite" class="btn btn-fav-save" title="Сохранить текущий цвет в банк избранного">☆ В банк</button>
+              </div>
             </label>
+            <div class="color-presets">
+              <h3>Мягкие цвета</h3>
+              <div class="preset-grid" id="preset-grid"></div>
+              <p class="section-hint">Нажмите на цвет, чтобы применить его к ленте.</p>
+            </div>
+            <div class="favorites-bank">
+              <h3>Избранное</h3>
+              <div class="favorite-grid" id="favorite-grid"></div>
+              <p class="section-hint" id="favorite-empty-hint">Банк пуст. Выберите цвет на палитре и нажмите «☆ В банк», чтобы сохранить его.</p>
+            </div>
             <label class="control-row">
               <span>Эффект</span>
               <select id="effect">
                 <option value="0">Статичный</option>
                 <option value="1">Радуга</option>
-                <option value="2">Огонь</option>
-                <option value="3">Волны</option>
-                <option value="4">Мерцание</option>
-                <option value="5">Цикл</option>
+                <option value="2">Волны</option>
+                <option value="3">Мерцание</option>
+                <option value="4">Цикл</option>
+                <option value="5">Пульс</option>
+                <option value="6">Цветомузыка (мост с компа)</option>
               </select>
             </label>
           </div>

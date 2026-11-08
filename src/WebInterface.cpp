@@ -41,7 +41,7 @@ bool applyLightJson(JsonVariant source) {
     lightConfig.brightness = constrain(source["brightness"] | lightConfig.brightness, 0, 255);
     lightConfig.color = source["color"] | lightConfig.color;
     const uint8_t effect = source["effect"] | static_cast<uint8_t>(lightConfig.effect);
-    if (effect > static_cast<uint8_t>(LightEffect::Cycle)) return false;
+    if (effect > static_cast<uint8_t>(LightEffect::Music)) return false;
     lightConfig.effect = static_cast<LightEffect>(effect);
     lightConfig.alarmEnabled = source["alarm_enabled"] | lightConfig.alarmEnabled;
     lightConfig.mqttToken = source["mqtt_token"] | lightConfig.mqttToken;
@@ -52,6 +52,22 @@ bool applyLightJson(JsonVariant source) {
         lightConfig.alarmMinutes[i] = minutes;
     }
     return saveConfig();
+}
+
+bool applyLiveLightJson(JsonVariant source) {
+    if (!source.is<JsonObject>()) return false;
+    if (source["enabled"].is<bool>()) {
+        const bool enabled = source["enabled"].as<bool>();
+        if (lightConfig.enabled != enabled) setLightEnabled(enabled);
+    }
+    lightConfig.brightness = constrain(source["brightness"] | lightConfig.brightness, 0, 255);
+    lightConfig.color = source["color"] | lightConfig.color;
+    const uint8_t effect = source["effect"] | static_cast<uint8_t>(lightConfig.effect);
+    if (effect <= static_cast<uint8_t>(LightEffect::Music)) {
+        lightConfig.effect = static_cast<LightEffect>(effect);
+        if (lightConfig.effect == LightEffect::Music) noteMusicFrameReceived();
+    }
+    return true;
 }
 } // namespace
 
@@ -64,8 +80,28 @@ void initWebServer() {
     server.addHandler(&ws);
     server.addHandler(&events);
     ws.onEvent([](AsyncWebSocket*, AsyncWebSocketClient* client, AwsEventType type,
-                 void*, uint8_t*, size_t) {
+                 void* arg, uint8_t* data, size_t length) {
         if (type == WS_EVT_CONNECT) sendLightStatus(client);
+        if (type == WS_EVT_DATA) {
+            auto* info = static_cast<AwsFrameInfo*>(arg);
+            if (!info || info->opcode != WS_TEXT || !info->final ||
+                info->index != 0 || info->len != length) {
+                if (!info || info->opcode != WS_BINARY || !info->final ||
+                    info->index != 0 || info->len != length || length != 5) return;
+
+                const uint8_t effect = data[4];
+                if (effect > static_cast<uint8_t>(LightEffect::Music)) return;
+                lightConfig.brightness = data[0];
+                lightConfig.color = (static_cast<uint32_t>(data[1]) << 16) |
+                    (static_cast<uint32_t>(data[2]) << 8) | data[3];
+                lightConfig.effect = static_cast<LightEffect>(effect);
+                if (lightConfig.effect == LightEffect::Music) noteMusicFrameReceived();
+                return;
+            }
+
+            JsonDocument doc;
+            if (!deserializeJson(doc, data, length)) applyLiveLightJson(doc.as<JsonVariant>());
+        }
     });
 
     server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
@@ -115,8 +151,71 @@ void initWebServer() {
         request->send(200, "application/json", "{\"status\":\"ok\"}");
     });
 
+    server.on("/api/get-favorites", HTTP_GET, [](AsyncWebServerRequest* request) {
+        JsonDocument doc;
+        JsonArray arr = doc.to<JsonArray>();
+        for (uint8_t i = 0; i < 6; ++i) arr.add(lightConfig.favoriteColors[i]);
+        sendJson(request, doc);
+    });
+
+    server.on("/api/save-favorite", HTTP_POST, [](AsyncWebServerRequest* request) {}, nullptr,
+    [](AsyncWebServerRequest* request, uint8_t* data, size_t length, size_t, size_t) {
+        JsonDocument doc;
+        if (deserializeJson(doc, data, length)) {
+            request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Неверные данные\"}");
+            return;
+        }
+        const int index = doc["index"] | -1;
+        const uint32_t color = doc["color"] | 0;
+        if (index < 0 || index > 5) {
+            request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Неверный слот избранного\"}");
+            return;
+        }
+        lightConfig.favoriteColors[index] = color;
+        if (!saveConfig()) {
+            request->send(500, "application/json", "{\"status\":\"error\",\"message\":\"Ошибка сохранения\"}");
+            return;
+        }
+        request->send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+
+    server.on("/api/remove-favorite", HTTP_POST, [](AsyncWebServerRequest* request) {}, nullptr,
+    [](AsyncWebServerRequest* request, uint8_t* data, size_t length, size_t, size_t) {
+        JsonDocument doc;
+        if (deserializeJson(doc, data, length)) {
+            request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Неверные данные\"}");
+            return;
+        }
+        const int index = doc["index"] | -1;
+        if (index < 0 || index > 5) {
+            request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Неверный слот избранного\"}");
+            return;
+        }
+        lightConfig.favoriteColors[index] = 0;
+        if (!saveConfig()) {
+            request->send(500, "application/json", "{\"status\":\"error\",\"message\":\"Ошибка сохранения\"}");
+            return;
+        }
+        request->send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+
     server.on("/api/test-sunrise", HTTP_POST, [](AsyncWebServerRequest* request) {
         testSunrise(lightConfig.brightness);
+        request->send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+
+    // Живое управление цветом без записи во флеш (для цветомузыки/моста с компа)
+    server.on("/api/light-live", HTTP_POST, [](AsyncWebServerRequest* request) {}, nullptr,
+    [](AsyncWebServerRequest* request, uint8_t* data, size_t length, size_t, size_t) {
+        JsonDocument doc;
+        if (deserializeJson(doc, data, length)) {
+            request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Неверные данные\"}");
+            return;
+        }
+        if (!applyLiveLightJson(doc.as<JsonVariant>())) {
+            request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"Неверные данные\"}");
+            return;
+        }
         request->send(200, "application/json", "{\"status\":\"ok\"}");
     });
 

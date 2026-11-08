@@ -1,0 +1,20 @@
+[Unit]
+Description=LightNode color-music bridge daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Замените dmitriy на ваше имя пользователя в системе
+User=dmitriy
+Group=dmitriy
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=PULSE_SERVER=unix:/run/user/1000/pulse/native
+WorkingDirectory=/home/dmitriy/Работа/Projects/embedded/LightNode/tools
+ExecStart=/usr/bin/python3 /home/dmitriy/Работа/Projects/embedded/LightNode/tools/light_music_daemon.py
+Restart=on-failure
+RestartSec=5
+# Пользователь dmitriy уже в группе audio (доступ к звуковым устройствам)
+
+[Install]
+WantedBy=multi-user.target

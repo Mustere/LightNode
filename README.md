@@ -11,7 +11,7 @@ normal web-panel operation.
 
 - WS2812 control on pin `D5` for 120 LEDs by default;
 - on/off control, RGB color, and brightness;
-- static, rainbow, fire, waves, twinkle, and color-cycle effects;
+- static, rainbow, waves, twinkle, pulse (soft breathing), color-cycle, and music (external bridge) effects;
 - non-blocking animations and non-blocking sunrise test;
 - optional daily sunrise schedule;
 - Wi-Fi station (STA) and access-point (AP) modes;
@@ -116,6 +116,7 @@ The panel provides:
 
 - immediate LED enable/disable;
 - brightness, color, and effect selection;
+- soft color presets and a favorites bank (save/remove from the color picker);
 - sunrise test;
 - daily sunrise times for each weekday;
 - Wi-Fi credentials and MQTT token;

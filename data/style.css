@@ -596,3 +596,116 @@ footer {
     font-size: 0.75rem;
     color: var(--text-muted);
 }
+
+/* --- МЯГКИЕ ЦВЕТА И БАНК ИЗБРАННОГО --- */
+.color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.color-row input[type="color"] {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: none;
+    box-shadow: var(--shadow);
+}
+.color-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-fav-save {
+    flex: 0 0 auto;
+    padding: 0 14px;
+    height: 44px;
+    font-size: 0.95rem;
+    background-color: var(--additional-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.btn-fav-save:hover {
+    background-color: var(--additional-color-hover);
+}
+.color-presets,
+.favorites-bank {
+    margin-top: 6px;
+}
+.color-presets h3,
+.favorites-bank h3 {
+    font-size: 1rem;
+    margin: 0 0 8px 0;
+    color: var(--text-muted);
+}
+.preset-grid,
+.favorite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 8px;
+}
+.preset-btn,
+.favorite-chip {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.1s, box-shadow 0.2s;
+}
+.preset-btn:hover,
+.favorite-chip:hover {
+    transform: scale(1.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+.preset-btn:active,
+.favorite-chip:active {
+    transform: scale(0.92);
+}
+.favorite-chip.empty {
+    background: var(--bg-color);
+    border: 2px dashed var(--border-color);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.favorite-slot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.fav-delete {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--danger-color);
+    color: #ffffff;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    padding: 0;
+}
+.fav-delete:hover {
+    opacity: 0.9;
+}
+.fav-delete:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .color-row input[type="color"] {
+        width: 44px !important;
+    }
+}
